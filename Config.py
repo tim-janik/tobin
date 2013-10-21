@@ -1,12 +1,53 @@
 # Licensed GNU Affero GPL v3 or later: http://www.gnu.org/licenses/agpl.html
 import sys
 
+# Package defaults
+package_name = 'tobin'
+package_version, package_buildid = ('0.0-uninstalled', 'untracked')
 # Config defaults
 sitename = 'Localhost'
 
+# Accessors & helpers
+def version_info():
+  return '%s %s (Build ID: %s)' % (package_name, package_version, package_buildid)
+def usage_help():
+  h = ''
+  h += 'Usage: %s [OPTIONS] LOGFILES...\n' % package_name
+  h += 'Options:\n'
+  h += '  -h, --help                    Display this help and exit\n'
+  h += '  -v, --version                 Display version and exit\n'
+  return h.strip()
 
+# Command line argument processing
+def process_arg (arg, val):
+  if   arg == '-h' or arg == '--help':
+    print usage_help()
+    sys.exit (0)
+  elif arg == '-v' or arg == '--version':
+    print version_info()
+    sys.exit (0)
+def parse_args (args):
+  import getopt
+  short_options = 'h v'.replace (' ', '') # 'f:'
+  long_options  = 'help version'.split() # 'foo='
+  try:
+    options, files = getopt.gnu_getopt (args, short_options, long_options)
+  except getopt.GetoptError, ex:
+    exmsg = "unrecognized option '-%s'" % ex.opt if ex.opt else str (ex)
+    print >>sys.stderr, "%s: %s" % (package_name, exmsg)
+    print >>sys.stderr, "Use '%s --help' for more information." % package_name
+    sys.exit (-1)
+  for arg, val in options:
+    process_arg (arg, val)
+  return files
 
-# wrap Config module to handle unknown settings
+# Install package configuration
+def package_install_configuration (pkgdict):
+  for k in pkgdict.keys():
+    assert k.startswith ('package_')
+  globals().update (pkgdict)
+
+# Wrap Config module to handle unknown settings
 class ConfigModule (object):
   def __init__ (self, sysmodule):
     self._sysmodule = sysmodule
