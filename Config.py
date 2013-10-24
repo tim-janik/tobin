@@ -36,7 +36,7 @@ def parse_args (args):
     exmsg = "unrecognized option '-%s'" % ex.opt if ex.opt else str (ex)
     print >>sys.stderr, "%s: %s" % (package_name, exmsg)
     print >>sys.stderr, "Use '%s --help' for more information." % package_name
-    sys.exit (-1)
+    sys.exit (1)
   for arg, val in options:
     process_arg (arg, val)
   return files
