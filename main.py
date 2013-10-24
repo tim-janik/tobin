@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Licensed GNU Affero GPL v3 or later: http://www.gnu.org/licenses/agpl.html
-import sys, Config, os
+import sys, os, Config, Report
 
 Config.package_install_configuration ({
   #@PACKAGE_INSTALL_CONFIGURATION_PAGE1@        # configuration settings substituted upon script installation
@@ -34,6 +34,14 @@ def main (argv):
     die (3, "failed to preprocess log files (exitcode=%d)" % rcode)
   logdata_dict = json.load (open (tname, 'rb'))
   os.unlink (tname)
+  # generate report
+  destdir = './logreport'
+  if not os.path.isdir (destdir) or not os.access (destdir, os.X_OK):
+    try:
+      os.mkdir (destdir)
+    except OSError, ex:
+      die (5, "failed to create or access directory %s: %s" % (destdir, ex.strerror))
+  Report.generate (destdir)
   print "LOGDATA:", logdata_dict.keys()
 
 main (sys.argv)
