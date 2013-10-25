@@ -8,11 +8,16 @@ simple_title = '%s - Usage Statistics' % Config.sitename
 report_index = HTML [
   HEAD [
     TITLE [ simple_title ],
+    LINK (href = 'standard.css', rel = 'stylesheet', type = 'text/css'),
     ],
   BODY [
     COMMENT ['Tobin statistics generated on %s' % datetime.datetime.today()],
-    H1 [ simple_title ],
-    ]
+    DIV (_class = 'outer-wrapper') [
+      DIV (_class = 'main report') [
+        H1 [ simple_title ],
+        ],
+      ],
+    ],
   ]
 
 class LogReport:
@@ -24,7 +29,14 @@ class LogReport:
     nice_html = HtmlStmt.tidy_html (rawhtml)
     fout.write (nice_html)
     fout.close()
+  def generate_css (self):
+    fout = open (self.destdir + '/standard.css', 'w')
+    fcss = open (Config.package_data_file ('standard.css'))
+    fout.write (fcss.read())
+    fcss.close()
+    fout.close()
 
 def generate (destdir):
   lr = LogReport (destdir)
   lr.generate_index()
+  lr.generate_css()

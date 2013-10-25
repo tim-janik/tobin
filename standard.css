@@ -1,0 +1,7 @@
+/* CC0 Public Domain: http://creativecommons.org/publicdomain/zero/1.0/ */
+
+body		{ font-family:	"DejaVu Sans", "Bitstream Vera Sans", Corbel, "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans",
+		  		"Liberation Sans", Verdana, "Verdana Ref", sans-serif;
+		}
+
+.report h1	{ text-align: center; font-variant: small-caps; }

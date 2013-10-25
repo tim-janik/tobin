@@ -1,9 +1,10 @@
 # Licensed GNU Affero GPL v3 or later: http://www.gnu.org/licenses/agpl.html
-import sys
+import sys, os
 
 # Package defaults
 package_name = 'tobin'
 package_version, package_buildid = ('0.0-uninstalled', 'untracked')
+package_datadir = '.'
 # Config defaults
 sitename = 'Localhost'
 
@@ -17,6 +18,19 @@ def usage_help():
   h += '  -h, --help                    Display this help and exit\n'
   h += '  -v, --version                 Display version and exit\n'
   return h.strip()
+
+# Data file access
+def package_data_file (filename, mode = 'r'):
+  fpath = package_datadir + '/' + filename
+  amask = 0
+  if 'r' in mode: amask |= os.R_OK
+  if 'w' in mode: amask |= os.W_OK
+  if 'x' in mode: amask |= os.X_OK
+  if not os.access (fpath, amask):
+    raise IOError ("access failed: '%s'" % fpath)
+  if 'D' in mode and not os.path.isdir (fpath):
+    raise IOError ("not a directory: '%s'" % fpath)
+  return fpath
 
 # Command line argument processing
 def process_arg (arg, val):
