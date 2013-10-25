@@ -34,6 +34,28 @@ def main (argv):
     die (3, "failed to preprocess log files (exitcode=%d)" % rcode)
   logdata_dict = json.load (open (tname, 'rb'))
   os.unlink (tname)
+  stat_hits = logdata_dict['hits']
+  stat_urls = logdata_dict['urls']
+  stat_queries = logdata_dict['queries']
+  stat_referrers = logdata_dict['referrers']
+  stat_uagents = logdata_dict['uagents']
+  # walk hits and visits
+  last_hit_usecs, visits = 0, {}
+  xv, xh = 0, 0
+  for hit in stat_hits:
+    # check ascending submissions
+    time_stamp_usec, ip4addr, uagent_quark = hit[0], hit[1], hit[7]
+    assert time_stamp_usec >= last_hit_usecs
+    # determine new visits
+    vkey = (ip4addr, uagent_quark)
+    vlast = visits.get (vkey, None)
+    new_visit = vlast == None or time_stamp_usec - vlast > Config.visit_timeout_usec
+    visits[vkey] = time_stamp_usec
+    xh += 1
+    xv += new_visit
+  del (last_hit_usecs, visits, vkey, vlast, new_visit)
+  print "Hits:\t%s" % xh
+  print "Visits:\t%s" % xv
   # generate report
   destdir = './logreport'
   if not os.path.isdir (destdir) or not os.access (destdir, os.X_OK):
@@ -42,6 +64,5 @@ def main (argv):
     except OSError, ex:
       die (5, "failed to create or access directory %s: %s" % (destdir, ex.strerror))
   Report.generate (destdir)
-  print "LOGDATA:", logdata_dict.keys()
 
 main (sys.argv)

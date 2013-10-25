@@ -6,7 +6,8 @@ package_name = 'tobin'
 package_version, package_buildid = ('0.0-uninstalled', 'untracked')
 package_datadir = '.'
 # Config defaults
-sitename = 'Localhost'
+sitename = 'Localhost'                  # site title
+visit_timeout_usec = 1800 * 1000000     # time within which URLs from the same IP/UA are considered the same visit
 
 # Accessors & helpers
 def version_info():
