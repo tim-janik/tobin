@@ -5,27 +5,29 @@ import HtmlStmt         # for tidy_html
 
 simple_title = '%s - Usage Statistics' % Config.sitename
 
-report_index = HTML [
-  HEAD [
-    TITLE [ simple_title ],
-    LINK (href = 'standard.css', rel = 'stylesheet', type = 'text/css'),
-    ],
-  BODY [
-    COMMENT ['Tobin statistics generated on %s' % datetime.datetime.today()],
-    DIV (_class = 'outer-wrapper') [
-      DIV (_class = 'main report') [
-        H1 [ simple_title ],
-        ],
+def _build_report_html (html_elements):
+  return HTML [
+    HEAD [
+      TITLE [ simple_title ],
+      LINK (href = 'standard.css', rel = 'stylesheet', type = 'text/css'),
       ],
-    ],
-  ]
+    BODY [
+      DIV (_class = 'outer-wrapper') [
+        DIV (_class = 'main report') [
+          H1 [ simple_title ],
+          html_elements,
+          ],
+        ],
+      COMMENT ['Tobin statistics generated on %s' % datetime.datetime.today()],
+      ],
+    ]
 
 class LogReport:
   def __init__ (self, destdir):
     self.destdir = destdir
-  def generate_index (self):
+  def generate_index (self, html_elements):
     fout = open (self.destdir + '/index.html', 'w')
-    rawhtml = unicode (report_index)
+    rawhtml = unicode (_build_report_html (html_elements))
     nice_html = HtmlStmt.tidy_html (rawhtml)
     fout.write (nice_html)
     fout.close()
@@ -36,7 +38,7 @@ class LogReport:
     fcss.close()
     fout.close()
 
-def generate (destdir):
+def generate (destdir, html_elements = None):
   lr = LogReport (destdir)
-  lr.generate_index()
   lr.generate_css()
+  lr.generate_index (html_elements if html_elements else [])

@@ -40,10 +40,14 @@ def main (argv):
   stat_referrers = logdata_dict['referrers']
   stat_uagents = logdata_dict['uagents']
   # walk hits and visits
-  stats = Statistics.Statistics()
+  stats = Statistics.Statistics (stat_urls, stat_queries, stat_referrers, stat_uagents)
+  import TopVisits
+  stats.gauges += [ TopVisits.TopVisits (stats) ]
   stats.walk_hits (stat_hits)
+  stats.done()
   print "Hits:\t%s" % stats.hits
   print "Visits:\t%s" % stats.visits
+  statistics_html_content = stats.as_html()
   # generate report
   destdir = './logreport'
   if not os.path.isdir (destdir) or not os.access (destdir, os.X_OK):
@@ -51,6 +55,6 @@ def main (argv):
       os.mkdir (destdir)
     except OSError, ex:
       die (5, "failed to create or access directory %s: %s" % (destdir, ex.strerror))
-  Report.generate (destdir)
+  Report.generate (destdir, statistics_html_content)
 
 main (sys.argv)
