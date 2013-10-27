@@ -3,5 +3,21 @@
 body		{ font-family:	"DejaVu Sans", "Bitstream Vera Sans", Corbel, "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans",
 		  		"Liberation Sans", Verdana, "Verdana Ref", sans-serif;
 		}
+/* FONTS:
+font-family: "DejaVu Sans", "Bitstream Vera Sans", Corbel, "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", "Liberation Sans", Verdana, "Verdana Ref", sans-serif;
+font-family: "DejaVu Sans Mono", "Bitstream Vera Sans Mono", Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
+*/
 
 .report h1	{ text-align: center; font-variant: small-caps; }
+
+.score, .url		{ font-size: 0.9em; font-family: "DejaVu Sans Mono", "Bitstream Vera Sans Mono", Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace; }
+table.topx .title	{ color: #fff; background-color: #18b; font-weight: bold; }
+table.topx .subtitle	{ color: #fff; background-color: #18b; font-weight: normal; }
+table.topx .subtitle th	{ font-weight: normal; }
+table.topx .info td	{ color: #000; background-color: #9df; border-top: none; } /* #cef */
+table.topx .rank	{ color: #000; width: 7em; padding-right: .5em; }
+table.topx .score	{ color: #840; width: 7em; padding-right: .5em; }
+table.topx .url		{ color: #000; }
+table.topx td		{ border-top: 1px dashed; padding: 1px 2px 2px 2px; }
+/* table.topx tr:last-child td { border-bottom: none; } */
+table.topx 		{ border: 1px solid; margin: 0 auto; }
