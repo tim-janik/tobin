@@ -8,6 +8,8 @@ simple_title = '%s - Usage Statistics' % Config.sitename
 def _build_report_html (html_elements):
   return HTML [
     HEAD [
+      # META (charset = 'UTF-8'), # HTML5
+      META (http_equiv = 'Content-type', content = 'text/html; charset=UTF-8'), # HTML4
       TITLE [ simple_title ],
       LINK (href = 'standard.css', rel = 'stylesheet', type = 'text/css'),
       ],
