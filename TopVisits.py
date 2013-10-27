@@ -23,7 +23,8 @@ class TopVisits (Statistics.GaugeIface):
   def as_html (self):
     title = 'Top 20 Entry Pages'
     sub   = 'Page requests ordered by visits'
-    total = 'Total number of pages: %u' % self.entry_count
+    totalp = 'Total number of entry pages: %u' % self.entry_count
+    totalv = 'Total number of entry visits: %u' % self.total_visits
     rowlist, i = [], 0
     ftotal = self.total_visits / 100.0
     for tup in self.entry_top20:
@@ -38,7 +39,8 @@ class TopVisits (Statistics.GaugeIface):
     fig = TABLE (summary = title, _class = 'topx entry-pages', cellspacing = '0') [
       TR (_class = 'title')    [ TH (colspan = '4') [ title ], ],
       TR (_class = 'subtitle') [ TH (colspan = '4') [ sub ], ],
-      TR (_class = 'info')     [ TD (colspan = '4') [ total ], ],
+      TR (_class = 'info')     [ TD (colspan = '4') [ totalp ], ],
+      TR (_class = 'info')     [ TD (colspan = '4') [ totalv ], ],
       rowlist,
       ]
     return DIV (_class = 'top-entry-visits') [
