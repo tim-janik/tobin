@@ -21,4 +21,4 @@ table.gauge 		{ border: 1px solid; margin: 1.5em auto; }
 table.topx .rank	{ color: #000; text-align: right; padding-left:.1em; padding-right: 2em; }
 table.topx .score	{ color: #840; text-align: right; padding-left: 1em; padding-right: 1em; }
 table.topx .perc	{ color: #840; text-align: right; padding-left: 1em; padding-right: 2em; }
-table.topx .url		{ color: #000; padding-left: 1em; }
+table.topx .url		{ color: #000; padding-left: 1em; overflow: hidden; text-overflow: ellipsis; max-width: 35em; }
