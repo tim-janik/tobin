@@ -39,10 +39,10 @@ class Statistics (object):
   def done (self):
     for g in self.gauges:
       g.done()
-  def as_html (self):
+  def as_html (self, destdir):
     elements = []
     for g in self.gauges:
-      htm = g.as_html()
+      htm = g.as_html (destdir)
       if hasattr (htm, '__iter__'):
         elements.extend (htm)
       else:
@@ -72,7 +72,7 @@ class GaugeIface (object):
     pass
   def done (self):
     pass
-  def as_html (self):
+  def as_html (self, destdir):
     return []
   def url (self, quark):
     return self.statistics.urls[quark]

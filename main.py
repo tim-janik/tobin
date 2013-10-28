@@ -47,9 +47,9 @@ def main (argv):
   stats.done()
   print "Hits:\t%s" % stats.hits
   print "Visits:\t%s" % stats.visits
-  statistics_html_content = stats.as_html()
   # generate report
   destdir = './logreport'
+  statistics_html_content = stats.as_html (destdir)
   if not os.path.isdir (destdir) or not os.access (destdir, os.X_OK):
     try:
       os.mkdir (destdir)

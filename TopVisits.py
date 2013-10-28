@@ -20,7 +20,7 @@ class TopVisits (Statistics.GaugeIface):
     self.total_visits = sum ([tup[1] for tup in ev])
     ev = sorted (ev, key = lambda tup: tup[1], reverse = True)
     self.entry_top20 = ev[:20]
-  def as_html (self):
+  def as_html (self, destdir):
     title = 'Top 20 Entry Pages'
     sub   = 'Page requests ordered by visits'
     totalp = 'Total number of entry pages: %u' % self.entry_count
