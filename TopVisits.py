@@ -36,7 +36,7 @@ class TopVisits (Statistics.GaugeIface):
         TD (_class = 'url')   [ self.url (tup[0]) ],
         ]
       rowlist += [ row ]
-    fig = TABLE (summary = title, _class = 'topx entry-pages', cellspacing = '0') [
+    fig = TABLE (summary = title, _class = 'gauge topx entry-pages', cellspacing = '0') [
       TR (_class = 'title')    [ TH (colspan = '4') [ title ], ],
       TR (_class = 'subtitle') [ TH (colspan = '4') [ sub ], ],
       TR (_class = 'info')     [ TD (colspan = '4') [ totalp ], ],
@@ -44,6 +44,6 @@ class TopVisits (Statistics.GaugeIface):
       rowlist,
       ]
     return DIV (_class = 'top-entry-visits') [
-      A (name = 'top-pages'),
+      A (name = 'top-entry-pages'),
       fig
       ]
