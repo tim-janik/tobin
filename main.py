@@ -43,7 +43,7 @@ def main (argv):
   stats = Statistics.Statistics (stat_urls, stat_queries, stat_referrers, stat_uagents)
   import TopVisits
   stats.gauges += [ TopVisits.TopVisits (stats) ]
-  stats.walk_hits (stat_hits)
+  stats.walk_qhits (stat_hits)
   stats.done()
   print "Hits:\t%s" % stats.hits
   print "Visits:\t%s" % stats.visits

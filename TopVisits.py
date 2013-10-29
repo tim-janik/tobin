@@ -5,15 +5,15 @@ from HtmlStmt import *  # DIV, PRE, A, etc
 class TopVisits (Statistics.GaugeIface):
   def __init__ (self, statistics):
     super (self.__class__, self).__init__ (statistics)
-    self.entry_visits = {}      # url_quark -> nvisits
+    self.entry_visits = {}      # url -> nvisits
     self.entry_count = 0
     self.total_visits = 0
     self.entry_top20 = None
   def hit (self, hit, new_visit):
-    (time_stamp_usec, ip4addr, http_status, tx_bytes, url_quark, query_quark, referrer_quark, uagent_quark) = hit
+    (time_stamp_usec, ip4addr, http_status, tx_bytes, url, query, referrer, uagent) = hit
     if new_visit:
-      self.entry_visits.setdefault (url_quark, 0)
-      self.entry_visits[url_quark] += 1
+      self.entry_visits.setdefault (url, 0)
+      self.entry_visits[url] += 1
   def done (self):
     ev = self.entry_visits.items()
     self.entry_count = len (ev)
@@ -28,12 +28,13 @@ class TopVisits (Statistics.GaugeIface):
     rowlist, i = [], 0
     ftotal = self.total_visits / 100.0
     for tup in self.entry_top20:
+      url, count = tup
       i += 1
       row = TR [
         TD (_class = 'rank')  [ '%u)' % i ],
-        TD (_class = 'score') [ '%u'  % tup[1] ],
-        TD (_class = 'perc')  [ '%.1f%%' % (tup[1] / ftotal) ],
-        TD (_class = 'url')   [ self.url (tup[0]) ],
+        TD (_class = 'score') [ '%u'  % count ],
+        TD (_class = 'perc')  [ '%.1f%%' % (count / ftotal) ],
+        TD (_class = 'url')   [ url.string ],
         ]
       rowlist += [ row ]
     fig = TABLE (summary = title, _class = 'gauge topx entry-pages', cellspacing = '0') [
