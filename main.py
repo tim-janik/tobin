@@ -22,32 +22,22 @@ def main (argv):
     print >>sys.stderr, '%s: %s' % (sys.argv[0], 'missing input files')
     print >>sys.stderr, Config.usage_help()
     sys.exit (1)
-  # preprocess input, write to and read from JSON temporary file
-  if not os.access ('./xstat', os.X_OK | os.R_OK):
-    die (2, "missing internal helper './xstat'")
-  import tempfile, subprocess, json
-  tfile, tname = tempfile.mkstemp (prefix = tmpprefix + 'logs', suffix = '.json')
-  os.close (tfile)
-  rcode = subprocess.call ('./xstat ' + ' '.join (files) + ' >' + tname, shell = True)
-  if rcode != 0:
-    os.unlink (tname) # cleanup
-    die (3, "failed to preprocess log files (exitcode=%d)" % rcode)
-  logdata_dict = json.load (open (tname, 'rb'))
-  os.unlink (tname)
-  stat_hits = logdata_dict['hits']
-  stat_urls = logdata_dict['urls']
-  stat_queries = logdata_dict['queries']
-  stat_referrers = logdata_dict['referrers']
-  stat_uagents = logdata_dict['uagents']
-  # walk hits and visits
-  stats = Statistics.Statistics (stat_urls, stat_queries, stat_referrers, stat_uagents)
+  # read, parse and sort input
+  import LogParser
+  if len (files) != 1:
+    die (1, 'exactly one input file required') # FIXME: support multiple files
+  filehandle = open (files[0])
+  lparser_unsorted = LogParser.log_line_parser (filehandle)
+  lparser = LogParser.log_line_sorter (lparser_unsorted)
+  # collect statistics
+  stats = Statistics.Statistics()
   import TopVisits
   stats.gauges += [ TopVisits.TopVisits (stats) ]
-  stats.walk_qhits (stat_hits)
+  stats.walk_hits (lparser)
   stats.done()
+  # generate report
   print "Hits:\t%s" % stats.hits
   print "Visits:\t%s" % stats.visits
-  # generate report
   destdir = './logreport'
   statistics_html_content = stats.as_html (destdir)
   if not os.path.isdir (destdir) or not os.access (destdir, os.X_OK):

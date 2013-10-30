@@ -10,10 +10,10 @@ class TopVisits (Statistics.GaugeIface):
     self.total_visits = 0
     self.entry_top20 = None
   def hit (self, hit, new_visit):
-    (time_stamp_usec, ip4addr, http_status, tx_bytes, url, query, referrer, uagent) = hit
+    (ipaddr, time_stamp_usec, method, resource, query, protocol, http_status, tx_bytes, referrer, uagent) = hit
     if new_visit:
-      self.entry_visits.setdefault (url, 0)
-      self.entry_visits[url] += 1
+      self.entry_visits.setdefault (resource, 0)
+      self.entry_visits[resource] += 1
   def done (self):
     ev = self.entry_visits.items()
     self.entry_count = len (ev)
@@ -28,13 +28,13 @@ class TopVisits (Statistics.GaugeIface):
     rowlist, i = [], 0
     ftotal = self.total_visits / 100.0
     for tup in self.entry_top20:
-      url, count = tup
+      resource, count = tup
       i += 1
       row = TR [
         TD (_class = 'rank')  [ '%u)' % i ],
         TD (_class = 'score') [ '%u'  % count ],
         TD (_class = 'perc')  [ '%.1f%%' % (count / ftotal) ],
-        TD (_class = 'url')   [ url.string ],
+        TD (_class = 'url')   [ resource.string ],
         ]
       rowlist += [ row ]
     fig = TABLE (summary = title, _class = 'gauge topx entry-pages', cellspacing = '0') [

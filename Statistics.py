@@ -3,28 +3,33 @@ import Config
 
 # General Statistics
 class Statistics (object):
-  def __init__ (self, stat_urls, stat_queries, stat_referrers, stat_uagents):
+  def __init__ (self):
     self.gauges = []            # [ GaugeIface ]
     self.visits = 0
     self.hits = 0
-    self.url_quarks = stat_urls
-    self.query_quarks = stat_queries
-    self.referrer_quarks = stat_referrers
-    self.uagent_quarks = stat_uagents
     self.last_hit_usecs = 0
     self.last_visits = {}       # (ip4addr, uagent) -> time_stamp_usec
     self.hour_stats = {}        # hourly_timestamp -> HourStat
-    self.urls = {}              # string -> UrlString
+    self.methods = {}           # string -> MethodString
+    self.resources = {}         # string -> ResourceString
     self.queries = {}           # string -> QueryString
+    self.protocols = {}         # string -> ProtocolString
     self.uagents = {}           # string -> UAgentString
     self.referrers = {}         # string -> ReferrerString
-  def submit_url (self, string, tx_bytes, new_visit):
-    url = self.urls.get (string)
-    if not url:
-      url = UrlString (string)
-      self.urls[url.string] = url
-    url.submit (tx_bytes, new_visit)
-    return url
+  def submit_method (self, string, tx_bytes, new_visit):
+    method = self.methods.get (string)
+    if not method:
+      method = MethodString (string)
+      self.methods[method.string] = method
+    method.submit (tx_bytes, new_visit)
+    return method
+  def submit_resource (self, string, tx_bytes, new_visit):
+    resource = self.resources.get (string)
+    if not resource:
+      resource = ResourceString (string)
+      self.resources[resource.string] = resource
+    resource.submit (tx_bytes, new_visit)
+    return resource
   def submit_query (self, string, tx_bytes, new_visit):
     query = self.queries.get (string)
     if not query:
@@ -32,6 +37,13 @@ class Statistics (object):
       self.queries[query.string] = query
     query.submit (tx_bytes, new_visit)
     return query
+  def submit_protocol (self, string, tx_bytes, new_visit):
+    protocol = self.protocols.get (string)
+    if not protocol:
+      protocol = ProtocolString (string)
+      self.protocols[protocol.string] = protocol
+    protocol.submit (tx_bytes, new_visit)
+    return protocol
   def submit_referrer (self, string, tx_bytes, new_visit):
     referrer = self.referrers.get (string)
     if not referrer:
@@ -46,24 +58,26 @@ class Statistics (object):
       self.uagents[uagent.string] = uagent
     uagent.submit (tx_bytes, new_visit)
     return uagent
-  def walk_qhits (self, hitlist):
-    for qhit in hitlist:
-      (time_stamp_usec, ip4addr, http_status, tx_bytes, url_quark, query_quark, referrer_quark, uagent_quark) = qhit
+  def walk_hits (self, rawhit_iter):
+    for rawhit in rawhit_iter:
+      (ipaddr, ruser, luser, time_stamp_usec, method, resource, query, protocol, http_status, tx_bytes, referrer, uagent) = rawhit
       assert time_stamp_usec >= self.last_hit_usecs # ensure ascending submissions
       self.last_hit_usecs = time_stamp_usec
       # determine new visits
-      vkey = (ip4addr, uagent_quark)
+      vkey = (ipaddr, uagent)
       vlast = self.last_visits.get (vkey, None)
       new_visit = vlast == None or time_stamp_usec - vlast > Config.visit_timeout_usec
       self.last_visits[vkey] = time_stamp_usec
       self.visits += new_visit
       self.hits += 1
       # collect string stats
-      url_string = self.submit_url (self.url_quarks[url_quark], tx_bytes, new_visit)
-      query_string = self.submit_query (self.query_quarks[query_quark], tx_bytes, new_visit)
-      referrer_string = self.submit_referrer (self.referrer_quarks[referrer_quark], tx_bytes, new_visit)
-      uagent_string = self.submit_uagent (self.uagent_quarks[uagent_quark], tx_bytes, new_visit)
-      hit = (time_stamp_usec, ip4addr, http_status, tx_bytes, url_string, query_string, referrer_string, uagent_string)
+      method_stat = self.submit_method (method, tx_bytes, new_visit)
+      resource_stat = self.submit_resource (resource, tx_bytes, new_visit)
+      query_stat = self.submit_query (query, tx_bytes, new_visit)
+      protocol_stat = self.submit_protocol (protocol, tx_bytes, new_visit)
+      referrer_stat = self.submit_referrer (referrer, tx_bytes, new_visit)
+      uagent_stat = self.submit_uagent (uagent, tx_bytes, new_visit)
+      hit = (ipaddr, time_stamp_usec, method_stat, resource_stat, query_stat, protocol_stat, http_status, tx_bytes, referrer_stat, uagent_stat)
       # collect hourly stats
       time_hstamp = time_stamp_usec // 3600000000 * 3600 # timestamp in seconds, quantized to hours
       hstat = self.hour_stats.get (time_hstamp)
@@ -104,8 +118,10 @@ class StringStat (object):
     self.bytes += tx_bytes
     if new_visit:
       self.visits += 1
-class UrlString (StringStat): pass
+class MethodString (StringStat): pass
+class ResourceString (StringStat): pass
 class QueryString (StringStat): pass
+class ProtocolString (StringStat): pass
 class UAgentString (StringStat): pass
 class ReferrerString (StringStat): pass
 
@@ -119,7 +135,7 @@ class HourStat (object):
     self.bytes = 0
     # (year, mon, mday, hour, Min, sec, wday, yday, isdst) = time.gmtime (time_stamp_usec / 1000000)
   def submit (self, hit, new_visit):
-    tx_bytes = hit[3]
+    tx_bytes = hit[7]
     self.urls += 1
     self.bytes += tx_bytes
     if new_visit:
