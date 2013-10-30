@@ -28,7 +28,7 @@ class DailyVisits (Statistics.GaugeIface):
     y = self.daily_visits
     fig = plt.figure ()
     # print fig, fig.get_size_inches(), fig.get_dpi() # Figure(640x480), [ 8.  6.], 80
-    fig_size = (1024, 768)      # desired figure size as w, h
+    fig_size = (1024, 512)      # desired figure size as width, height
     fig_dpi = fig.get_dpi()
     fig.set_size_inches (fig_size[0] / fig_dpi, fig_size[1] / fig_dpi)
     colors = ('#0000ff', '#1111ff', '#2222ff', '#3333ff', '#4444ff', '#7777ff', '#9999ff')
@@ -56,7 +56,7 @@ class DailyVisits (Statistics.GaugeIface):
       TR (_class = 'subtitle') [ TH (colspan = '1') [ sub ], ],
       TR (_class = 'info')     [ TD (colspan = '1') [ totalv ], ],
       TR (_class = 'info')     [ TD (colspan = '1') [ dayavg ], ],
-      TR [ TD [ IMG (_class = 'maingraph', src = svgname, style = 'width: 50em; height: auto;') ], ], # FIXME: move CSS to file
+      TR [ TD [ IMG (_class = 'widegraph', src = svgname) ], ],
       ]
     return DIV (_class = 'daily-visits') [
       A (name = 'daily-visits'),
