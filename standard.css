@@ -18,8 +18,9 @@ table.gauge td		{ border-top: 1px dashed; padding: 1px 2px 2px 2px; }
 table.gauge 		{ border: 1px solid; margin: 1.5em auto; }
 /* table.gauge tr:last-child td { border-bottom: none; } */
 .score, .url		{ font-size: 0.9em; font-family: "DejaVu Sans Mono", "Bitstream Vera Sans Mono", Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace; }
-table.topx .rank	{ color: #000; text-align: right; padding-left:.1em; padding-right: 2em; }
-table.topx .score	{ color: #840; text-align: right; padding-left: 1em; padding-right: 1em; }
-table.topx .perc	{ color: #840; text-align: right; padding-left: 1em; padding-right: 2em; }
-table.topx .url		{ color: #000; padding-left: 1em; overflow: hidden; text-overflow: ellipsis; max-width: 35em; }
+table.topx .rank	{ color: #000; padding-left:.2em; padding-right: 1em; text-align: right; }
+table.topx .score	{ color: #840; padding-left: 1em; padding-right: 1em; text-align: right; }
+table.topx .perc	{ color: #840; padding-left:.5em; padding-right: 1em; text-align: right; }
+table.topx .url		{ color: #000; padding-left: 1em; padding-right:.2em; max-width: 50em;
+			  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 table.gauge img.widegraph	{ width: auto; height: auto; } /* for 1024 wide screens: width:64em; */
