@@ -5,7 +5,7 @@ from HtmlStmt import *  # DIV, PRE, A, etc
 class TopVisits (Statistics.GaugeIface):
   def __init__ (self, statistics):
     super (self.__class__, self).__init__ (statistics)
-    self.NN = 20                                        # top NN
+    self.NN = 50                                        # top NN
     self.entry_visits = collections.defaultdict (int)   # resource -> count
     self.entry_count = 0
     self.total_visits = 0
