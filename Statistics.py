@@ -52,6 +52,38 @@ class Statistics (object):
   def is_pagespeed_referrer (self, string):
     return string.startswith ('Serf/') and mpgs_pattern.match (string)
   _mpgs_pattern = re.compile (r'Serf/[0-9.-]* mod_pagespeed/[0-9.-]$')
+  def is_content_status (self, http_status):
+    return self._http_status_types.get (http_status) == 'C'
+  _http_status_types = { # T-Temporary, C-Content, M-Modified, R-Redirect, E-ServerError, 4-Missing
+    100 : 'T', # Continue
+    101 : 'T', # Switching Protocols
+    102 : 'T', # Processing WebDAV
+    200 : 'C', # OK
+    201 : 'M', # Created
+    202 : 'T', # Accepted
+    203 : '-', # Non-Authoritative Information
+    204 : '-', # No Content
+    205 : 'M', # Reset Content
+    206 : 'C', # Partial Content
+    207 : 'M', # Multi-Status WebDAV
+    208 : '-', # Already Reported WebDAV
+    226 : 'M', # IM Used
+    300 : 'R', # Multiple Choices
+    301 : 'R', # Moved Permanently
+    302 : 'R', # Found
+    303 : 'R', # See Other
+    304 : 'C', # Not Modified
+    305 : 'R', # Use Proxy
+    306 : 'R', # Switch Proxy
+    307 : 'R', # Temporary Redirect
+    308 : 'R', # Permanent Redirect
+    400 : '-', # Bad Request
+    404 : '4', # Not Found
+    451 : '-', # Unavailable For Legal Reasons
+    500 : 'E', # Internal Server Error
+    503 : 'E', # Service Unavailable
+    507 : 'E', # Insufficient Storage
+    }
   def is_stat_year_timestamp (self, timestamp):
     return timestamp >= self.year_range[0] and timestamp < self.year_range[1]
   def submit_method (self, string, tx_bytes, new_visit):
@@ -102,7 +134,9 @@ class Statistics (object):
       # ensure ascending submissions, select statistic year
       assert time_stamp_usec >= self.last_hit_usecs
       self.last_hit_usecs = time_stamp_usec
-      if not self.is_stat_year_timestamp (time_stamp_usec / 1000000) or self.is_pagespeed_referrer (referrer):
+      if (not self.is_stat_year_timestamp (time_stamp_usec / 1000000) or
+          self.is_pagespeed_referrer (referrer) or
+          not self.is_content_status (http_status)):
         continue
       # determine new visits
       vkey = (ipaddr, uagent)
