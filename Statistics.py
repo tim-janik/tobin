@@ -1,5 +1,5 @@
 # Licensed GNU Affero GPL v3 or later: http://www.gnu.org/licenses/agpl.html
-import Config, time, calendar
+import Config, Mime, time, calendar
 
 # General Statistics
 class Statistics (object):
@@ -17,7 +17,8 @@ class Statistics (object):
     self.visits = 0
     self.hits = 0
     self.last_hit_usecs = 0
-    self.last_visits = {}       # (ip4addr, uagent) -> time_stamp_usec
+    self.last_visits = {}       # (ip4addr, uagent) -> (time_stamp_usec, visitid)
+    self.last_visitid = 0
     self.hour_stats = {}        # hourly_timestamp -> HourStat
     self.methods = {}           # string -> MethodString
     self.resources = {}         # string -> ResourceString
@@ -25,6 +26,17 @@ class Statistics (object):
     self.protocols = {}         # string -> ProtocolString
     self.uagents = {}           # string -> UAgentString
     self.referrers = {}         # string -> ReferrerString
+  def hide_url (self, url):
+    '''Guess if "url" is an auxillary asset like an image or css file'''
+    dot = url.rfind ('.')
+    slash = url.rfind ('/')
+    if dot < 0 or dot <= slash:
+      return False                      # guessing text/html
+    ext = url[dot:].lower()
+    if ext in ('.css', '.rss'):
+      return True                       # hide common web assets
+    m = Mime.guess_extension_mime (ext, 'text/x-unknown')
+    return not m.startswith ('text/')   # gues text/... is usually interesting
   def is_stat_year_timestamp (self, timestamp):
     return timestamp >= self.year_range[0] and timestamp < self.year_range[1]
   def submit_method (self, string, tx_bytes, new_visit):
@@ -80,9 +92,15 @@ class Statistics (object):
       # determine new visits
       vkey = (ipaddr, uagent)
       vlast = self.last_visits.get (vkey, None)
-      new_visit = vlast == None or time_stamp_usec - vlast > Config.visit_timeout_usec
-      self.last_visits[vkey] = time_stamp_usec
-      self.visits += new_visit
+      if vlast == None or time_stamp_usec - vlast[0] > Config.visit_timeout_usec:
+        new_visit = True
+        self.visits += 1
+        self.last_visitid += 1
+        vlast = (time_stamp_usec, self.last_visitid)
+      else:
+        new_visit = False
+        vlast = (time_stamp_usec, vlast[1])
+      self.last_visits[vkey] = vlast
       self.hits += 1
       # collect string stats
       method_stat = self.submit_method (method, tx_bytes, new_visit)
@@ -101,7 +119,7 @@ class Statistics (object):
       hstat.submit (hit, new_visit)
       # collect gauge stats
       for g in self.gauges:
-        g.hit (hit, new_visit)
+        g.hit (hit, vlast[1], new_visit)
   def done (self):
     for g in self.gauges:
       g.done()
@@ -165,7 +183,7 @@ class GaugeIface (object):
   __slot__ = ('statistics',)
   def __init__ (self, statistics):
     self.statistics = statistics
-  def hit (self, hit, new_visit):
+  def hit (self, hit, visitid, new_visit):
     pass
   def done (self):
     pass
