@@ -26,8 +26,20 @@ class Statistics (object):
     self.protocols = {}         # string -> ProtocolString
     self.uagents = {}           # string -> UAgentString
     self.referrers = {}         # string -> ReferrerString
+  _wp_entries = set ('''wp-admin wp-content wp-includes wp-activate.php wp-blog-header.php wp-comments-post.php
+                        wp-config-sample.php wp-cron.php wp-links-opml.php wp-load.php wp-login.php wp-mail.php
+                        wp-settings.php wp-signup.php wp-trackback.php'''.split())
+  def wordpress_url (self, url):
+    '''Guess if "url" is a Wordpress file or directory'''
+    if url.startswith ('/wp-'):
+      slash = url.find ('/', 1)
+      part = url[1:slash] if slash > 0 else url[1:]
+      return part in self._wp_entries
+    return False
   def hide_url (self, url):
     '''Guess if "url" is an auxillary asset like an image or css file'''
+    if self.wordpress_url (url):
+      return True
     dot = url.rfind ('.')
     slash = url.rfind ('/')
     if dot < 0 or dot <= slash:
