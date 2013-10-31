@@ -1,5 +1,5 @@
 # Licensed GNU Affero GPL v3 or later: http://www.gnu.org/licenses/agpl.html
-import Config, Mime, time, calendar
+import Config, Mime, time, calendar, re
 
 # General Statistics
 class Statistics (object):
@@ -26,9 +26,6 @@ class Statistics (object):
     self.protocols = {}         # string -> ProtocolString
     self.uagents = {}           # string -> UAgentString
     self.referrers = {}         # string -> ReferrerString
-  _wp_entries = set ('''wp-admin wp-content wp-includes wp-activate.php wp-blog-header.php wp-comments-post.php
-                        wp-config-sample.php wp-cron.php wp-links-opml.php wp-load.php wp-login.php wp-mail.php
-                        wp-settings.php wp-signup.php wp-trackback.php'''.split())
   def wordpress_url (self, url):
     '''Guess if "url" is a Wordpress file or directory'''
     if url.startswith ('/wp-'):
@@ -36,6 +33,9 @@ class Statistics (object):
       part = url[1:slash] if slash > 0 else url[1:]
       return part in self._wp_entries
     return False
+  _wp_entries = set ('''wp-admin wp-content wp-includes wp-activate.php wp-blog-header.php wp-comments-post.php
+                        wp-config-sample.php wp-cron.php wp-links-opml.php wp-load.php wp-login.php wp-mail.php
+                        wp-settings.php wp-signup.php wp-trackback.php'''.split())
   def hide_url (self, url):
     '''Guess if "url" is an auxillary asset like an image or css file'''
     if self.wordpress_url (url):
@@ -49,6 +49,9 @@ class Statistics (object):
       return True                       # hide common web assets
     m = Mime.guess_extension_mime (ext, 'text/x-unknown')
     return not m.startswith ('text/')   # gues text/... is usually interesting
+  def is_pagespeed_referrer (self, string):
+    return string.startswith ('Serf/') and mpgs_pattern.match (string)
+  _mpgs_pattern = re.compile (r'Serf/[0-9.-]* mod_pagespeed/[0-9.-]$')
   def is_stat_year_timestamp (self, timestamp):
     return timestamp >= self.year_range[0] and timestamp < self.year_range[1]
   def submit_method (self, string, tx_bytes, new_visit):
@@ -99,7 +102,7 @@ class Statistics (object):
       # ensure ascending submissions, select statistic year
       assert time_stamp_usec >= self.last_hit_usecs
       self.last_hit_usecs = time_stamp_usec
-      if not self.is_stat_year_timestamp (time_stamp_usec / 1000000):
+      if not self.is_stat_year_timestamp (time_stamp_usec / 1000000) or self.is_pagespeed_referrer (referrer):
         continue
       # determine new visits
       vkey = (ipaddr, uagent)
