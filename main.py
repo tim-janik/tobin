@@ -24,16 +24,16 @@ def main (argv):
     sys.exit (1)
   # read, parse and sort input
   import LogParser
-  if len (files) != 1:
-    die (1, 'exactly one input file required') # FIXME: support multiple files
-  filehandle = open (files[0])
-  lparser_unsorted = LogParser.log_line_parser (filehandle)
-  lparser = LogParser.log_line_sorter (lparser_unsorted)
+  print >>sys.stderr, '%s: sorting %u files...' % (sys.argv[0], len (files))
+  sort_pool = LogParser.log_file_sort_pool (files)
+  print >>sys.stderr, '%s: parsing %u sorted files...' % (sys.argv[0], len (sort_pool))
+  lparser = LogParser.log_file_parse_pool (sort_pool)
   # collect statistics
   stats = Statistics.Statistics()
   import TopVisits, DailyVisits
   stats.gauges += [ TopVisits.TopVisits (stats), DailyVisits.DailyVisits (stats), ]
   stats.walk_hits (lparser)
+  print >>sys.stderr, '%s: generating report...' % sys.argv[0]
   stats.done()
   # generate report
   print "Hits:\t%s" % stats.hits
