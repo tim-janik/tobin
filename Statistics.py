@@ -146,10 +146,15 @@ class Statistics (object):
         self.visits += 1
         self.last_visitid += 1
         vlast = (time_stamp_usec, self.last_visitid)
+        self.last_visits[vkey] = vlast
+        if self.last_visitid & 0xffff == 0:
+          for k,v in self.last_visits.items():
+            if v[0] + 3600000000 + 3 * Config.visit_timeout_usec < time_stamp_usec:
+              del self.last_visits[k]
       else:
         new_visit = False
         vlast = (time_stamp_usec, vlast[1])
-      self.last_visits[vkey] = vlast
+        self.last_visits[vkey] = vlast
       self.hits += 1
       # collect string stats
       method_stat = self.submit_method (method, tx_bytes, new_visit)
