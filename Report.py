@@ -22,7 +22,7 @@ def _build_report_html (html_elements, statistics):
           html_elements,
           ],
         ],
-      COMMENT ['Tobin statistics generated on %s' % datetime.datetime.today()],
+      COMMENT ['Statistics generated on %s with %s' % (datetime.datetime.today(), Config.version_info())],
       ],
     ]
 
