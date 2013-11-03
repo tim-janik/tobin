@@ -1,15 +1,15 @@
 # Licensed GNU Affero GPL v3 or later: http://www.gnu.org/licenses/agpl.html
-import sys, os
+import sys, os, socket
 
 # Package defaults
 package_name = 'tobin'
 package_version, package_buildid = ('0.0-uninstalled', 'untracked')
 package_datadir = '.'
 # Config defaults
-sitename = 'Localhost'                  # site title
+sitename = socket.gethostname()         # default site title
 visit_timeout_usec = 1800 * 1000000     # time within which URLs from the same IP/UA are considered the same visit
 
-# Accessors & helpers
+# Command line argument processing, usage and version
 def version_info():
   return '%s %s (Build ID: %s)' % (package_name, package_version, package_buildid)
 def usage_help():
@@ -18,7 +18,32 @@ def usage_help():
   h += 'Options:\n'
   h += '  -h, --help                    Display this help and exit\n'
   h += '  -v, --version                 Display version and exit\n'
+  h += '  -n <sitename>                 Website name for the generated statistics\n'
   return h.strip()
+def process_arg (arg, val):
+  if   arg == '-h' or arg == '--help':
+    print usage_help()
+    sys.exit (0)
+  elif arg == '-v' or arg == '--version':
+    print version_info()
+    sys.exit (0)
+  elif arg == '-n':
+    global sitename
+    sitename = val
+def parse_args (args):
+  import getopt
+  short_options = 'h v n:'.replace (' ', '') # 'f:'
+  long_options  = 'help version name='.split() # 'foo='
+  try:
+    options, files = getopt.gnu_getopt (args, short_options, long_options)
+  except getopt.GetoptError, ex:
+    exmsg = "unrecognized option '-%s'" % ex.opt if ex.opt else str (ex)
+    print >>sys.stderr, "%s: %s" % (package_name, exmsg)
+    print >>sys.stderr, "Use '%s --help' for more information." % package_name
+    sys.exit (1)
+  for arg, val in options:
+    process_arg (arg, val)
+  return files
 
 # Data file access
 def package_data_file (filename, mode = 'r'):
@@ -32,29 +57,6 @@ def package_data_file (filename, mode = 'r'):
   if 'D' in mode and not os.path.isdir (fpath):
     raise IOError ("not a directory: '%s'" % fpath)
   return fpath
-
-# Command line argument processing
-def process_arg (arg, val):
-  if   arg == '-h' or arg == '--help':
-    print usage_help()
-    sys.exit (0)
-  elif arg == '-v' or arg == '--version':
-    print version_info()
-    sys.exit (0)
-def parse_args (args):
-  import getopt
-  short_options = 'h v'.replace (' ', '') # 'f:'
-  long_options  = 'help version'.split() # 'foo='
-  try:
-    options, files = getopt.gnu_getopt (args, short_options, long_options)
-  except getopt.GetoptError, ex:
-    exmsg = "unrecognized option '-%s'" % ex.opt if ex.opt else str (ex)
-    print >>sys.stderr, "%s: %s" % (package_name, exmsg)
-    print >>sys.stderr, "Use '%s --help' for more information." % package_name
-    sys.exit (1)
-  for arg, val in options:
-    process_arg (arg, val)
-  return files
 
 # Install package configuration
 def package_install_configuration (pkgdict):
