@@ -1,5 +1,11 @@
 # Licensed under the MIT License: http://opensource.org/licenses/MIT
 # This module was heavily inspired by throw_out_your_templates.py and Breve
+'''Module to generate HTML elements directly via Python statements
+
+This module allows writing of HTML elements with Python expressions, e.g.:
+  doc = HTML [ BODY [ 'Example' ] ]
+More extensive exmaples can be found in the source code.
+'''
 
 class Tag (object):
   after_head = ''
@@ -100,7 +106,9 @@ class ProtoTag (object):
   def __str__ (self):
     return ''.join (self._strings())
 
-def make_html_tags():
+def html_tags():
+  if hasattr (html_tags, 'tags'):
+    return html_tags.tags
   outer_tags  = '''BODY HEAD HTML TITLE'''
   block_tags  = '''ADDRESS ARTICLE ASIDE AUDIO BLOCKQUOTE CANVAS DD DIV DL DT FIELDSET FIGCAPTION FIGURE FOOTER FORM
                    H1 H2 H3 H4 H5 H6 HEADER HGROUP NOSCRIPT OL OUTPUT P PRE SECTION TABLE TFOOT UL VIDEO'''
@@ -124,15 +132,34 @@ def make_html_tags():
     tags[tagname] = ProtoTag (EmptyTag, tagname)
   for tagname in line_tags.split():
     tags[tagname] = ProtoTag (LineTag, tagname)
-  return tags
+  html_tags.tags = tags
+  return html_tags.tags
 
-tag_statements = make_html_tags()
-del make_html_tags
-locals().update (tag_statements)
-__all__ = tag_statements.keys()
-del tag_statements
+locals().update (html_tags())
+__all__ = html_tags().keys()    # allow 'from HtmlStmt.py import *'
+
+def with_tags (func):
+  '''This decorator allows the decorated function to use HTML elements as expressions.'''
+  import functools
+  @functools.wraps (func)
+  def html_tags_wrapper (*args, **kwargs):
+    g, supplement = func.func_globals, []
+    for k,v in html_tags().items():
+      if not k in g:
+        g[k] = v                                # add tags to globals()
+        supplement.append (k)
+    try:
+      result = func (*args, **kwargs)           # execute with enriched modified globals()
+    finally:
+      try:
+        for k in supplement:
+          del g[k]                              # restore globals
+      except: pass
+    return result
+  return html_tags_wrapper
 
 def tidy_html (text):
+  '''Tidy up an HTML string - recommended to wrap HTML elements when stringifying'''
   from tidylib import tidy_document
   opts = { 'output-xhtml' : 0, 'uppercase-tags' : 1, }
   docheader = '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">\n'
