@@ -2,16 +2,17 @@
 import sys, os, socket
 
 # Package defaults
-package_name = 'tobin'
+package_name, package_url = 'tobin', 'http://testbit.eu/tobin'
 package_version, package_buildid = ('0.0-uninstalled', 'untracked')
 package_datadir = '.'
+package_title = package_name.capitalize()
 # Config defaults
 sitename = socket.gethostname()         # default site title
 visit_timeout_usec = 1800 * 1000000     # time within which URLs from the same IP/UA are considered the same visit
 
 # Command line argument processing, usage and version
 def version_info():
-  return '%s %s (Build ID: %s)' % (package_name, package_version, package_buildid)
+  return '%s %s (Build ID: %s)' % (package_title, package_version, package_buildid)
 def usage_help():
   h = ''
   h += 'Usage: %s [OPTIONS] LOGFILES...\n' % package_name
