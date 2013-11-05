@@ -139,22 +139,19 @@ locals().update (html_tags())
 __all__ = html_tags().keys()    # allow 'from HtmlStmt.py import *'
 
 def with_tags (func):
-  '''This decorator allows the decorated function to use HTML elements as expressions.'''
+  '''This decorator executes the decorated function with a globals() copy that includes HTML expressions.'''
+  local_globals = {} # dict that becomes globals() during calling func's code
+  local_func = type (func) (func.func_code, local_globals, func.func_name, func.func_defaults, func.func_closure)
+  # local_func wraps excution of func's code bundled with local_globals as globals() dict
   import functools
   @functools.wraps (func)
   def html_tags_wrapper (*args, **kwargs):
-    g, supplement = func.func_globals, []
-    for k,v in html_tags().items():
-      if not k in g:
-        g[k] = v                                # add tags to globals()
-        supplement.append (k)
+    local_globals.update (html_tags())          # supplement globals with HTML tags
+    local_globals.update (func.func_globals)    # incorporate the real globals
     try:
-      result = func (*args, **kwargs)           # execute with enriched modified globals()
+      result = local_func (*args, **kwargs)     # execute with enriched globals()
     finally:
-      try:
-        for k in supplement:
-          del g[k]                              # restore globals
-      except: pass
+      local_globals.clear()                     # purge all references
     return result
   return html_tags_wrapper
 
