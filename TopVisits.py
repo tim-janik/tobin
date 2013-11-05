@@ -1,6 +1,6 @@
 # Licensed GNU Affero GPL v3 or later: http://www.gnu.org/licenses/agpl.html
 import Config, Statistics, collections
-from HtmlStmt import *  # DIV, PRE, A, etc
+import HtmlStmt # tidy_html, with_tags for DIV, PRE, A, etc
 
 class TopVisits (Statistics.GaugeIface):
   def __init__ (self, statistics):
@@ -32,6 +32,7 @@ class TopVisits (Statistics.GaugeIface):
     ev = [item for item in ev if not item[0] in hidden_set]
     ev = sorted (ev, key = lambda item: item[1], reverse = True)
     self.entry_topNN = ev[:self.NN]
+  @HtmlStmt.with_tags
   def as_html (self, destdir):
     title = 'Top %u Entry Pages' % self.NN
     sub   = 'Page requests ordered by visits'

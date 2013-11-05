@@ -3,7 +3,7 @@
 import collections, time, calendar, Config, Statistics, GeoInfo
 import matplotlib.pyplot as plt
 import numpy as NP
-import HtmlStmt # DIV, PRE, A, etc
+import HtmlStmt # tidy_html, with_tags for DIV, PRE, A, etc
 
 class GeoHour (Statistics.GaugeIface):
   '''Provide a graph for the distribution of country visits per hour.'''

@@ -2,7 +2,7 @@
 import Config, Statistics, time, calendar
 import matplotlib.pyplot as plt
 import numpy as NP
-from HtmlStmt import *  # DIV, PRE, A, etc
+import HtmlStmt # tidy_html, with_tags for DIV, PRE, A, etc
 
 class DailyVisits (Statistics.GaugeIface):
   def __init__ (self, statistics):
@@ -42,6 +42,7 @@ class DailyVisits (Statistics.GaugeIface):
     svgname = 'DailyVisits.svg'
     plt.savefig (destdir + '/' + svgname, transparent = True, bbox_inches = 'tight', pad_inches = 0.1)
     return svgname
+  @HtmlStmt.with_tags
   def as_html (self, destdir):
     stat_year = self.statistics.stat_year
     (count, vsum, ma, mi) = self.daily_stats()
