@@ -24,3 +24,5 @@ table.topx .perc	{ color: #840; padding-left:.5em; padding-right: 1em; text-alig
 table.topx .url		{ color: #000; padding-left: 1em; padding-right:.2em; max-width: 50em;
 			  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 table.gauge img.widegraph	{ width: auto; height: auto; } /* for 1024 wide screens: width:64em; */
+
+div.tobin-footer	{ text-align: center; font-size: 90%; }
