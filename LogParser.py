@@ -34,7 +34,7 @@ def log_line_parser (logfile):
     m = logpattern.match (line)
     u = urlpattern.match (m.group (5)) if m else None
     if not m or not u:
-      print >>sys.stderr, '%s: malformed: %s:%u: %s' % (sys.argv[0], logfile.name, lineno, line)
+      print >>sys.stderr, '%s: malformed: %s:%u: %s' % (sys.argv[0], logfile.name, lineno, line.rstrip())
       continue
     hit = m.groups()
     time_stamp_usec = 1000000 * parse_logtime (hit[3])          # time_stamp_usec

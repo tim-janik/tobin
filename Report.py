@@ -3,9 +3,11 @@ import datetime, Config
 from HtmlStmt import *  # HTML, HEAD, BODY, etc
 import HtmlStmt         # for tidy_html
 
-simple_title = '%s - Usage Statistics' % Config.sitename
+def _report_title (statistics):
+  return '%s - Usage Statistics %u' % (Config.sitename, statistics.stat_year)
 
-def _build_report_html (html_elements):
+def _build_report_html (html_elements, statistics):
+  simple_title = _report_title (statistics)
   return HTML [
     HEAD [
       # META (charset = 'UTF-8'), # HTML5
@@ -25,11 +27,12 @@ def _build_report_html (html_elements):
     ]
 
 class LogReport:
-  def __init__ (self, destdir):
+  def __init__ (self, destdir, statistics):
     self.destdir = destdir
+    self.statistics = statistics
   def generate_index (self, html_elements):
     fout = open (self.destdir + '/index.html', 'w')
-    rawhtml = unicode (_build_report_html (html_elements))
+    rawhtml = unicode (_build_report_html (html_elements, self.statistics))
     nice_html = HtmlStmt.tidy_html (rawhtml)
     fout.write (nice_html)
     fout.close()
@@ -40,7 +43,7 @@ class LogReport:
     fcss.close()
     fout.close()
 
-def generate (destdir, html_elements = None):
-  lr = LogReport (destdir)
+def generate (destdir, statistics, html_elements = None):
+  lr = LogReport (destdir, statistics)
   lr.generate_css()
   lr.generate_index (html_elements if html_elements else [])

@@ -31,20 +31,20 @@ def main (argv):
   lparser = LogParser.log_line_sorter (lparser_unsorted)
   # collect statistics
   stats = Statistics.Statistics()
-  import TopVisits
-  stats.gauges += [ TopVisits.TopVisits (stats) ]
+  import TopVisits, DailyVisits
+  stats.gauges += [ TopVisits.TopVisits (stats), DailyVisits.DailyVisits (stats), ]
   stats.walk_hits (lparser)
   stats.done()
   # generate report
   print "Hits:\t%s" % stats.hits
   print "Visits:\t%s" % stats.visits
   destdir = './logreport'
-  statistics_html_content = stats.as_html (destdir)
   if not os.path.isdir (destdir) or not os.access (destdir, os.X_OK):
     try:
       os.mkdir (destdir)
     except OSError, ex:
       die (5, "failed to create or access directory %s: %s" % (destdir, ex.strerror))
-  Report.generate (destdir, statistics_html_content)
+  statistics_html_content = stats.as_html (destdir)
+  Report.generate (destdir, stats, statistics_html_content)
 
 main (sys.argv)

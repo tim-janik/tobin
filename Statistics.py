@@ -1,9 +1,18 @@
 # Licensed GNU Affero GPL v3 or later: http://www.gnu.org/licenses/agpl.html
-import Config
+import Config, time, calendar
 
 # General Statistics
 class Statistics (object):
-  def __init__ (self):
+  def __init__ (self, year = None):
+    if not year:
+      year = time.gmtime (time.time())[0]
+    self.stat_year = year            # year of interest, defaults to now
+    self.year_range = (calendar.timegm ((self.stat_year, 01, 01, 00, 00, 00)),
+                       calendar.timegm ((self.stat_year + 1, 01, 01, 00, 00, 00)))      # half open timestamp interval
+    self.leap_year = time.gmtime (calendar.timegm ([self.stat_year, 2, 29, 12, 59, 59])).tm_mon == 2
+    self.year_days = 366 if self.leap_year else 365
+    self.first_day = time.gmtime (calendar.timegm ([self.stat_year, 1, 1, 12, 59, 59])).tm_wday # 0 == Monday
+    self.month_lengths = (31, 28 + self.leap_year, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
     self.gauges = []            # [ GaugeIface ]
     self.visits = 0
     self.hits = 0
@@ -16,6 +25,8 @@ class Statistics (object):
     self.protocols = {}         # string -> ProtocolString
     self.uagents = {}           # string -> UAgentString
     self.referrers = {}         # string -> ReferrerString
+  def is_stat_year_timestamp (self, timestamp):
+    return timestamp >= self.year_range[0] and timestamp < self.year_range[1]
   def submit_method (self, string, tx_bytes, new_visit):
     method = self.methods.get (string)
     if not method:
@@ -61,8 +72,11 @@ class Statistics (object):
   def walk_hits (self, rawhit_iter):
     for rawhit in rawhit_iter:
       (ipaddr, ruser, luser, time_stamp_usec, method, resource, query, protocol, http_status, tx_bytes, referrer, uagent) = rawhit
-      assert time_stamp_usec >= self.last_hit_usecs # ensure ascending submissions
+      # ensure ascending submissions, select statistic year
+      assert time_stamp_usec >= self.last_hit_usecs
       self.last_hit_usecs = time_stamp_usec
+      if not self.is_stat_year_timestamp (time_stamp_usec / 1000000):
+        continue
       # determine new visits
       vkey = (ipaddr, uagent)
       vlast = self.last_visits.get (vkey, None)
@@ -127,13 +141,19 @@ class ReferrerString (StringStat): pass
 
 # Hourly Statistics
 class HourStat (object):
-  __slots__ = ('timestamp', 'visits', 'urls', 'bytes')
+  __slots__ = ('timestamp', 'visits', 'urls', 'bytes', 'year', 'month', 'mday', 'hour', 'wday', 'yday')
   def __init__ (self, timestamp):
     self.timestamp = timestamp
     self.visits = 0
     self.urls = 0
     self.bytes = 0
-    # (year, mon, mday, hour, Min, sec, wday, yday, isdst) = time.gmtime (time_stamp_usec / 1000000)
+    tm = time.gmtime (self.timestamp) # (tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst)
+    self.year = tm.tm_year
+    self.month = tm.tm_mon
+    self.mday = tm.tm_mday
+    self.hour = tm.tm_hour
+    self.wday = tm.tm_wday
+    self.yday = tm.tm_yday
   def submit (self, hit, new_visit):
     tx_bytes = hit[7]
     self.urls += 1
