@@ -1,5 +1,5 @@
 # Licensed GNU Affero GPL v3 or later: http://www.gnu.org/licenses/agpl.html
-import Config, time, calendar
+import Config, Mime, time, calendar, re
 
 # General Statistics
 class Statistics (object):
@@ -17,7 +17,8 @@ class Statistics (object):
     self.visits = 0
     self.hits = 0
     self.last_hit_usecs = 0
-    self.last_visits = {}       # (ip4addr, uagent) -> time_stamp_usec
+    self.last_visits = {}       # (ip4addr, uagent) -> (time_stamp_usec, visitid)
+    self.last_visitid = 0
     self.hour_stats = {}        # hourly_timestamp -> HourStat
     self.methods = {}           # string -> MethodString
     self.resources = {}         # string -> ResourceString
@@ -25,6 +26,64 @@ class Statistics (object):
     self.protocols = {}         # string -> ProtocolString
     self.uagents = {}           # string -> UAgentString
     self.referrers = {}         # string -> ReferrerString
+  def wordpress_url (self, url):
+    '''Guess if "url" is a Wordpress file or directory'''
+    if url.startswith ('/wp-'):
+      slash = url.find ('/', 1)
+      part = url[1:slash] if slash > 0 else url[1:]
+      return part in self._wp_entries
+    return False
+  _wp_entries = set ('''wp-admin wp-content wp-includes wp-activate.php wp-blog-header.php wp-comments-post.php
+                        wp-config-sample.php wp-cron.php wp-links-opml.php wp-load.php wp-login.php wp-mail.php
+                        wp-settings.php wp-signup.php wp-trackback.php'''.split())
+  def hide_url (self, url):
+    '''Guess if "url" is an auxillary asset like an image or css file'''
+    if self.wordpress_url (url):
+      return True
+    dot = url.rfind ('.')
+    slash = url.rfind ('/')
+    if dot < 0 or dot <= slash:
+      return False                      # guessing text/html
+    ext = url[dot:].lower()
+    if ext in ('.css', '.rss'):
+      return True                       # hide common web assets
+    m = Mime.guess_extension_mime (ext, 'text/x-unknown')
+    return not m.startswith ('text/')   # gues text/... is usually interesting
+  def is_pagespeed_referrer (self, string):
+    return string.startswith ('Serf/') and mpgs_pattern.match (string)
+  _mpgs_pattern = re.compile (r'Serf/[0-9.-]* mod_pagespeed/[0-9.-]$')
+  def is_content_status (self, http_status):
+    return self._http_status_types.get (http_status) == 'C'
+  _http_status_types = { # T-Temporary, C-Content, M-Modified, R-Redirect, E-ServerError, 4-Missing
+    100 : 'T', # Continue
+    101 : 'T', # Switching Protocols
+    102 : 'T', # Processing WebDAV
+    200 : 'C', # OK
+    201 : 'M', # Created
+    202 : 'T', # Accepted
+    203 : '-', # Non-Authoritative Information
+    204 : '-', # No Content
+    205 : 'M', # Reset Content
+    206 : 'C', # Partial Content
+    207 : 'M', # Multi-Status WebDAV
+    208 : '-', # Already Reported WebDAV
+    226 : 'M', # IM Used
+    300 : 'R', # Multiple Choices
+    301 : 'R', # Moved Permanently
+    302 : 'R', # Found
+    303 : 'R', # See Other
+    304 : 'C', # Not Modified
+    305 : 'R', # Use Proxy
+    306 : 'R', # Switch Proxy
+    307 : 'R', # Temporary Redirect
+    308 : 'R', # Permanent Redirect
+    400 : '-', # Bad Request
+    404 : '4', # Not Found
+    451 : '-', # Unavailable For Legal Reasons
+    500 : 'E', # Internal Server Error
+    503 : 'E', # Service Unavailable
+    507 : 'E', # Insufficient Storage
+    }
   def is_stat_year_timestamp (self, timestamp):
     return timestamp >= self.year_range[0] and timestamp < self.year_range[1]
   def submit_method (self, string, tx_bytes, new_visit):
@@ -75,14 +134,22 @@ class Statistics (object):
       # ensure ascending submissions, select statistic year
       assert time_stamp_usec >= self.last_hit_usecs
       self.last_hit_usecs = time_stamp_usec
-      if not self.is_stat_year_timestamp (time_stamp_usec / 1000000):
+      if (not self.is_stat_year_timestamp (time_stamp_usec / 1000000) or
+          self.is_pagespeed_referrer (referrer) or
+          not self.is_content_status (http_status)):
         continue
       # determine new visits
       vkey = (ipaddr, uagent)
       vlast = self.last_visits.get (vkey, None)
-      new_visit = vlast == None or time_stamp_usec - vlast > Config.visit_timeout_usec
-      self.last_visits[vkey] = time_stamp_usec
-      self.visits += new_visit
+      if vlast == None or time_stamp_usec - vlast[0] > Config.visit_timeout_usec:
+        new_visit = True
+        self.visits += 1
+        self.last_visitid += 1
+        vlast = (time_stamp_usec, self.last_visitid)
+      else:
+        new_visit = False
+        vlast = (time_stamp_usec, vlast[1])
+      self.last_visits[vkey] = vlast
       self.hits += 1
       # collect string stats
       method_stat = self.submit_method (method, tx_bytes, new_visit)
@@ -101,7 +168,7 @@ class Statistics (object):
       hstat.submit (hit, new_visit)
       # collect gauge stats
       for g in self.gauges:
-        g.hit (hit, new_visit)
+        g.hit (hit, vlast[1], new_visit)
   def done (self):
     for g in self.gauges:
       g.done()
@@ -165,7 +232,7 @@ class GaugeIface (object):
   __slot__ = ('statistics',)
   def __init__ (self, statistics):
     self.statistics = statistics
-  def hit (self, hit, new_visit):
+  def hit (self, hit, visitid, new_visit):
     pass
   def done (self):
     pass
