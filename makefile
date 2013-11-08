@@ -36,7 +36,7 @@ dummy: dummy.o
 TARGETS += tobin
 
 clean:
-	rm -f *.o *.lo ${TARGETS}
+	rm -f *.o *.lo *.pyc ${TARGETS}
 .PHONY: clean
 
 all-targets: ${TARGETS}
