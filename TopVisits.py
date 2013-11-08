@@ -34,7 +34,7 @@ class TopVisits (Statistics.GaugeIface):
     self.entry_topNN = ev[:self.NN]
   @HtmlStmt.with_tags
   def as_html (self, destdir):
-    title = 'Top %u Entry Pages' % self.NN
+    title = 'Top %u Entry Pages' % len (self.entry_topNN)
     sub   = 'Page requests ordered by visits'
     totalp = 'Total number of entry pages: %u' % self.entry_count
     totalv = 'Total number of entry visits: %u' % self.total_visits
