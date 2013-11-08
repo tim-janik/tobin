@@ -30,8 +30,10 @@ def main (argv):
   lparser = LogParser.log_file_parse_pool (sort_pool)
   # collect statistics
   stats = Statistics.Statistics()
-  import TopVisits, DailyVisits
-  stats.gauges += [ TopVisits.TopVisits (stats), DailyVisits.DailyVisits (stats), ]
+  import TopVisits, DailyVisits, GeoHour
+  stats.gauges += [ TopVisits.TopVisits (stats),
+                    DailyVisits.DailyVisits (stats),
+                    GeoHour.GeoHour (stats) ]
   stats.walk_hits (lparser)
   print >>sys.stderr, '%s: generating report...' % sys.argv[0]
   stats.done()

@@ -1,11 +1,11 @@
 # Licensed GNU Affero GPL v3 or later: http://www.gnu.org/licenses/agpl.html
 import datetime, Config
-from HtmlStmt import *  # HTML, HEAD, BODY, etc
-import HtmlStmt         # for tidy_html
+import HtmlStmt # tidy_html, with_tags for DIV, PRE, A, etc
 
 def _report_title (statistics):
   return '%s - Usage Statistics %u' % (Config.sitename, statistics.stat_year)
 
+@HtmlStmt.with_tags
 def _build_report_html (html_elements, statistics):
   simple_title = _report_title (statistics)
   return HTML [
@@ -22,7 +22,7 @@ def _build_report_html (html_elements, statistics):
           html_elements,
           ],
         ],
-      COMMENT ['Tobin statistics generated on %s' % datetime.datetime.today()],
+      COMMENT ['Statistics generated on %s with %s' % (datetime.datetime.today(), Config.version_info())],
       ],
     ]
 

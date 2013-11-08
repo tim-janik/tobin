@@ -1,5 +1,11 @@
 # Licensed under the MIT License: http://opensource.org/licenses/MIT
 # This module was heavily inspired by throw_out_your_templates.py and Breve
+'''Module to generate HTML elements directly via Python statements
+
+This module allows writing of HTML elements with Python expressions, e.g.:
+  doc = HTML [ BODY [ 'Example' ] ]
+More extensive exmaples can be found in the source code.
+'''
 
 class Tag (object):
   after_head = ''
@@ -100,7 +106,9 @@ class ProtoTag (object):
   def __str__ (self):
     return ''.join (self._strings())
 
-def make_html_tags():
+def html_tags():
+  if hasattr (html_tags, 'tags'):
+    return html_tags.tags
   outer_tags  = '''BODY HEAD HTML TITLE'''
   block_tags  = '''ADDRESS ARTICLE ASIDE AUDIO BLOCKQUOTE CANVAS DD DIV DL DT FIELDSET FIGCAPTION FIGURE FOOTER FORM
                    H1 H2 H3 H4 H5 H6 HEADER HGROUP NOSCRIPT OL OUTPUT P PRE SECTION TABLE TFOOT UL VIDEO'''
@@ -124,15 +132,31 @@ def make_html_tags():
     tags[tagname] = ProtoTag (EmptyTag, tagname)
   for tagname in line_tags.split():
     tags[tagname] = ProtoTag (LineTag, tagname)
-  return tags
+  html_tags.tags = tags
+  return html_tags.tags
 
-tag_statements = make_html_tags()
-del make_html_tags
-locals().update (tag_statements)
-__all__ = tag_statements.keys()
-del tag_statements
+locals().update (html_tags())
+__all__ = html_tags().keys()    # allow 'from HtmlStmt.py import *'
+
+def with_tags (func):
+  '''This decorator executes the decorated function with a globals() copy that includes HTML expressions.'''
+  local_globals = {} # dict that becomes globals() during calling func's code
+  local_func = type (func) (func.func_code, local_globals, func.func_name, func.func_defaults, func.func_closure)
+  # local_func wraps excution of func's code bundled with local_globals as globals() dict
+  import functools
+  @functools.wraps (func)
+  def html_tags_wrapper (*args, **kwargs):
+    local_globals.update (html_tags())          # supplement globals with HTML tags
+    local_globals.update (func.func_globals)    # incorporate the real globals
+    try:
+      result = local_func (*args, **kwargs)     # execute with enriched globals()
+    finally:
+      local_globals.clear()                     # purge all references
+    return result
+  return html_tags_wrapper
 
 def tidy_html (text):
+  '''Tidy up an HTML string - recommended to wrap HTML elements when stringifying'''
   from tidylib import tidy_document
   opts = { 'output-xhtml' : 0, 'uppercase-tags' : 1, }
   docheader = '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">\n'

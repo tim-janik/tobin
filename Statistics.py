@@ -1,5 +1,5 @@
 # Licensed GNU Affero GPL v3 or later: http://www.gnu.org/licenses/agpl.html
-import Config, Mime, time, calendar, re
+import collections, time, calendar, re, Config, Mime, GeoInfo
 
 # General Statistics
 class Statistics (object):
@@ -213,12 +213,13 @@ class ReferrerString (StringStat): pass
 
 # Hourly Statistics
 class HourStat (object):
-  __slots__ = ('timestamp', 'visits', 'urls', 'bytes', 'year', 'month', 'mday', 'hour', 'wday', 'yday')
+  __slots__ = ('timestamp', 'visits', 'urls', 'bytes', 'countries', 'year', 'month', 'mday', 'hour', 'wday', 'yday')
   def __init__ (self, timestamp):
     self.timestamp = timestamp
     self.visits = 0
     self.urls = 0
     self.bytes = 0
+    self.countries = collections.defaultdict (int) # country_code -> visits
     tm = time.gmtime (self.timestamp) # (tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst)
     self.year = tm.tm_year
     self.month = tm.tm_mon
@@ -227,11 +228,13 @@ class HourStat (object):
     self.wday = tm.tm_wday
     self.yday = tm.tm_yday
   def submit (self, hit, new_visit):
-    tx_bytes = hit[7]
+    ipaddr, tx_bytes = hit[0], hit[7]
     self.urls += 1
     self.bytes += tx_bytes
     if new_visit:
       self.visits += 1
+      cc = GeoInfo.lookup (ipaddr)
+      self.countries[cc] += 1
 
 class GaugeIface (object):
   __slot__ = ('statistics',)
