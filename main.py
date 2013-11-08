@@ -31,8 +31,8 @@ def main (argv):
   lparser = LogParser.log_line_sorter (lparser_unsorted)
   # collect statistics
   stats = Statistics.Statistics()
-  import TopVisits
-  stats.gauges += [ TopVisits.TopVisits (stats) ]
+  import TopVisits, DailyVisits
+  stats.gauges += [ TopVisits.TopVisits (stats), DailyVisits.DailyVisits (stats), ]
   stats.walk_hits (lparser)
   stats.done()
   # generate report
