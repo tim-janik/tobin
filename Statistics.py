@@ -3,10 +3,9 @@ import collections, time, calendar, re, Config, Mime, GeoInfo
 
 # General Statistics
 class Statistics (object):
-  def __init__ (self, year = None):
-    if not year:
-      year = time.gmtime (time.time())[0]
-    self.stat_year = year            # year of interest, defaults to now
+  def __init__ (self, year):
+    assert isinstance (year, (int, long))
+    self.stat_year = year       # year of interest
     self.year_range = (calendar.timegm ((self.stat_year, 01, 01, 00, 00, 00)),
                        calendar.timegm ((self.stat_year + 1, 01, 01, 00, 00, 00)))      # half open timestamp interval
     self.leap_year = time.gmtime (calendar.timegm ([self.stat_year, 2, 29, 12, 59, 59])).tm_mon == 2

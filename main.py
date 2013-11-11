@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Licensed GNU Affero GPL v3 or later: http://www.gnu.org/licenses/agpl.html
-import sys, os, Config, Statistics, Report
+import sys, os, time, Config, Statistics, Report
 
 Config.package_install_configuration ({
   #@PACKAGE_INSTALL_CONFIGURATION_PAGE1@        # configuration settings substituted upon script installation
@@ -16,6 +16,8 @@ def die (exitcode, message, filename = None):
   sys.exit (exitcode)
 
 def main (argv):
+  # set dynamic defaults
+  Config.stat_year = time.gmtime (time.time())[0]
   # process command line arguments
   files = Config.parse_args (argv[1:])
   if not files:
@@ -29,7 +31,7 @@ def main (argv):
   print >>sys.stderr, '%s: parsing %u sorted files...' % (sys.argv[0], len (sort_pool))
   lparser = LogParser.log_file_parse_pool (sort_pool)
   # collect statistics
-  stats = Statistics.Statistics()
+  stats = Statistics.Statistics (int (Config.stat_year))
   import TopVisits, DailyVisits, GeoHour
   stats.gauges += [ TopVisits.TopVisits (stats),
                     DailyVisits.DailyVisits (stats),
