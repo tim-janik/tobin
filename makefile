@@ -8,7 +8,7 @@ OPTIMIZTE	= -pipe -std=gnu++0x -O6 -Wall -Werror=format-security -Wdeprecated -W
 		  -mcx16 -funroll-loops -ftracer -finline-functions -fno-keep-static-consts -ftree-vectorize
 GXX 		= colorg++-4.7 ${OPTIMIZTE} ${CXXFLAGS}
 top_srcdir      = .
-VERSION		= 13.11.2
+VERSION		= 13.11.3
 BUILDID		= $(shell test -x $(top_srcdir)/.git/ && ( \
 		    git log -n1 --pretty=format:Git-%h --abbrev=11 ; \
 		    C=`git diff HEAD --raw | wc -l ` ; test "$$C" -lt 1 || echo "+$$C" ) \
