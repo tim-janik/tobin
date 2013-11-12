@@ -1,0 +1,40 @@
+/* CC0 Public Domain: http://creativecommons.org/publicdomain/zero/1.0/ */
+
+body		{ font-family:	"DejaVu Sans", "Bitstream Vera Sans", Corbel, "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans",
+		  		"Liberation Sans", Verdana, "Verdana Ref", sans-serif;
+		}
+/* FONTS:
+font-family: "DejaVu Sans", "Bitstream Vera Sans", Corbel, "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", "Liberation Sans", Verdana, "Verdana Ref", sans-serif;
+font-family: "DejaVu Sans Mono", "Bitstream Vera Sans Mono", Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
+*/
+
+/* Background Colors & Printing */
+@media print {
+  body				{ -webkit-print-color-adjust: exact; }
+}
+@media screen, print {
+  table.gauge .title		{ color: #fff; background-color: #18b; }
+  table.gauge .subtitle		{ color: #fff; background-color: #18b; }
+  table.gauge .info td		{ color: #000; background-color: #9df; }
+}
+
+/* Report styling */
+.report h1	{ text-align: center; font-variant: small-caps; }
+
+table.gauge .title	{ font-weight: bold; }
+table.gauge .subtitle	{ font-weight: normal; }
+table.gauge .subtitle th { font-weight: normal; }
+table.gauge .info td	{ border-top: none; font-size: 0.9em; }
+table.gauge td		{ border-top: 1px dashed; padding: 1px 2px 2px 2px; }
+table.gauge 		{ border: 2px solid; margin: 1.5em auto; }
+table.graphxy		{ page-break-before: always; page-break-inside: avoid; }
+/* table.gauge tr:last-child td { border-bottom: none; } */
+.score, .url		{ font-size: 0.9em; font-family: "DejaVu Sans Mono", "Bitstream Vera Sans Mono", Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace; }
+table.topx .rank	{ color: #000; padding-left:.2em; padding-right: 1em; text-align: right; }
+table.topx .score	{ color: #840; padding-left: 1em; padding-right: 1em; text-align: right; }
+table.topx .perc	{ color: #840; padding-left:.5em; padding-right: 1em; text-align: right; }
+table.topx .url		{ color: #000; padding-left: 1em; padding-right:.2em; max-width: 50em;
+			  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+table.gauge img.widegraph	{ width: auto; height: auto; } /* for 1024 wide screens: width:64em; */
+
+div.tobin-footer	{ text-align: center; font-size: 90%; }
