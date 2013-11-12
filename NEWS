@@ -1,0 +1,7 @@
+Tobin 13.11.2:							(2013-11-12)
+
+* Added Top 50 Entry Pages, shows the top 50 entry pages per visit.
+* Added Daily Visits graph, shows daily visits per year with week colotization.
+* Added Visits Per Hour graph, shows 24h visit graph with top 12 countries.
+* Added parsing support for input files that largely exceed RAM size.
+* Added UTF-8 HTML report output.

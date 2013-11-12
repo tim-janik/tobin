@@ -22,7 +22,11 @@ def _build_report_html (html_elements, statistics):
           html_elements,
           ],
         ],
-      COMMENT ['Statistics generated on %s with %s' % (datetime.datetime.today(), Config.version_info())],
+      DIV (_class = 'tobin-footer') [
+        'Created using ',
+        A (href = Config.package_url, target = '_blank') [ Config.package_title ],
+        ' %s.' % Config.package_version, ],
+      COMMENT ['Generated on %s with %s' % (datetime.datetime.today(), Config.version_info())],
       ],
     ]
 
