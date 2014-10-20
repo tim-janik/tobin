@@ -40,8 +40,9 @@ def main (argv):
   print >>sys.stderr, '%s: generating report...' % sys.argv[0]
   stats.done()
   # generate report
-  print "Hits:\t%s" % stats.hits
-  print "Visits:\t%s" % stats.visits
+  print "Hits:\t\t%s" % stats.hits
+  print "Visits:\t\t%s" % stats.visits
+  print "Redirects:\t%s" % stats.redirects
   destdir = './logreport'
   if not os.path.isdir (destdir) or not os.access (destdir, os.X_OK):
     try:

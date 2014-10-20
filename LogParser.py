@@ -69,10 +69,10 @@ def log_file_parse_pool (sorted_files):
       continue
     hit = m.groups()
     time_stamp_usec = 1000000 * timestamp
-    http_status = int (hit[4])                                  # http_status
-    tx_bytes = 0 if hit[5] == '-' else int (hit[5])             # tx_bytes
-    referrer = '' if hit[6] == '-' else hit[6]                  # referrer
-    uagent = '' if hit[7] == '-' else hit[7]                    # uagent
+    http_status = int (hit[4])                                          # http_status
+    tx_bytes = 0 if hit[5] == '-' else int (hit[5])                     # tx_bytes
+    referrer = '' if hit[6] == '-' or hit[6] is None else hit[6]        # referrer
+    uagent = '' if hit[7] == '-' or hit[7] is None else hit[7]          # uagent
     # split request URL
     method = u.group (1)
     url = u.group (2)

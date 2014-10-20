@@ -55,17 +55,19 @@ class GeoHour (Statistics.GaugeIface):
         dd[hour][index] += cv[1]
     total_visits = sum (sum (dd))
     dd[24] = dd[0]                                              # hour 0 == 24
-    dd[:,:] /= len (self.ydays_counted)                         # average stats
+    if self.ydays_counted:
+      dd[:,:] /= len (self.ydays_counted)                       # average stats
     # figure plotting
     fig = plt.figure()
     fig_size = (1024, 512)                      # desired figure size as width, height
     fig.set_size_inches (fig_size[0] / fig.get_dpi(), fig_size[1] / fig.get_dpi())
     colors = GeoInfo.country_colors (country_codes)
-    sp = plt.stackplot (range (25), dd.T, colors = colors)
-    self.color_legend (colors, country_names)
-    plt.xticks (range (25))
+    if self.ydays_counted:
+      sp = plt.stackplot (range (25), dd.T, colors = colors)
+      self.color_legend (colors, country_names)
+      plt.xticks (range (25))
+      plt.ylim ([0, dd.sum (1).max() / 0.6])                    # space for legend
     plt.xlim ([0, 24])
-    plt.ylim ([0, dd.sum (1).max() / 0.6])                      # space for legend
     svgname = 'GeoHour.svg'
     plt.savefig (destdir + '/' + svgname, transparent = True, bbox_inches = 'tight', pad_inches = 0.1)
     return (svgname, total_visits)
