@@ -13,6 +13,7 @@ class Statistics (object):
     self.first_day = time.gmtime (calendar.timegm ([self.stat_year, 1, 1, 12, 59, 59])).tm_wday # 0 == Monday
     self.month_lengths = (31, 28 + self.leap_year, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
     self.gauges = []            # [ GaugeIface ]
+    self.redirects = 0
     self.visits = 0
     self.hits = 0
     self.last_hit_usecs = 0
@@ -53,6 +54,8 @@ class Statistics (object):
   _mpgs_pattern = re.compile (r'Serf/[0-9.-]* mod_pagespeed/[0-9.-]$')
   def is_content_status (self, http_status):
     return self._http_status_types.get (http_status) == 'C'
+  def is_redirect_status (self, http_status):
+    return self._http_status_types.get (http_status) == 'R'
   _http_status_types = { # T-Temporary, C-Content, M-Modified, R-Redirect, E-ServerError, 4-Missing
     100 : 'T', # Continue
     101 : 'T', # Switching Protocols
@@ -134,8 +137,11 @@ class Statistics (object):
       assert time_stamp_usec >= self.last_hit_usecs
       self.last_hit_usecs = time_stamp_usec
       if (not self.is_stat_year_timestamp (time_stamp_usec / 1000000) or
-          self.is_pagespeed_referrer (referrer) or
-          not self.is_content_status (http_status)):
+          self.is_pagespeed_referrer (referrer)):
+        continue
+      if not self.is_content_status (http_status):
+        if self.is_redirect_status (http_status):
+          self.redirects += 1
         continue
       # determine new visits
       vkey = (ipaddr, uagent)
