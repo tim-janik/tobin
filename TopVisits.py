@@ -38,6 +38,7 @@ class TopVisits (Statistics.GaugeIface):
     sub   = 'Page requests ordered by visits'
     totalp = 'Total number of entry pages: %u' % self.entry_count
     totalv = 'Total number of entry visits: %u' % self.total_visits
+    totalr = 'Total number of redirects: %u' % self.statistics.redirects
     rowlist, i = [], 0
     ftotal = self.total_visits / 100.0
     for tup in self.entry_topNN:
@@ -55,6 +56,7 @@ class TopVisits (Statistics.GaugeIface):
       TR (_class = 'subtitle') [ TH (colspan = '4') [ sub ], ],
       TR (_class = 'info')     [ TD (colspan = '4') [ totalp ], ],
       TR (_class = 'info')     [ TD (colspan = '4') [ totalv ], ],
+      TR (_class = 'info')     [ TD (colspan = '4') [ totalr ], ],
       rowlist,
       ]
     return DIV (_class = 'top-entry-visits') [
